@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SRM GPA Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --color-bg: #090a0f;
+      --color-container: #18181b;
+      --color-text: #f1f5f9;
+      --color-primary: #60a5fa;
+      --color-table-header: #1a1b20;
+      --color-table-row: #18181b;
+      --color-btn: #2563eb;
+      --color-btn-hover: #1e40af;
+      --color-result-bg: #232336;
+      --color-result-text: #f1f5f9;
+      --color-border: #232336;
+      --color-border-card: #232336;
+      --color-remove-btn: #f87171;
+      --color-remove-btn-hover: #dc2626;
+      --color-add-btn: #22c55e;
+      --color-add-btn-hover: #16a34a;
+      --shadow-main: 0 8px 32px 0 rgba(0,0,0,0.38);
+      --shadow-card: 0 2px 12px 0 rgba(0,0,0,0.22);
+    }
+    body {
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+    }
+    .brand-logo {
+      position: fixed;
+      top: 22px;
+      left: 32px;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 54px;
+    }
+    .brand-logo img {
+      height: 48px;
+      width: auto;
+      display: block;
+      transition: opacity 0.3s;
+    }
+    .brand-logo .logo-light { display: none; }
+    body.light .brand-logo .logo-dark { display: none; }
+    body.light .brand-logo .logo-light { display: block; }
+    .container {
+      max-width: 720px;
+      margin: 90px auto 40px auto;
+      background: var(--color-container);
+      border-radius: 18px;
+      box-shadow: var(--shadow-main);
+      padding: 38px 32px 32px 32px;
+      border: 2px solid var(--color-border);
+      position: relative;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: var(--color-primary);
+      letter-spacing: 1px;
+      font-size: 2.1rem;
+      font-weight: 700;
+    }
+    .theme-toggle {
+      position: fixed;
+      top: 22px;
+      right: 32px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      z-index: 200;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .theme-toggle:focus {
+      outline: 2px solid var(--color-primary);
+    }
+    .theme-toggle svg {
+      width: 28px;
+      height: 28px;
+      display: block;
+      transition: color 0.3s;
+      color: var(--color-primary);
+    }
+    .initial-selection {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      margin-top: 40px;
+    }
+    .initial-selection button {
+      font-size: 1.3rem;
+      padding: 18px 44px;
+      border-radius: 10px;
+      border: none;
+      background: var(--color-btn);
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin: 0 10px;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.05);
+    }
+    .initial-selection button:hover {
+      background: var(--color-btn-hover);
+      transform: translateY(-2px) scale(1.03);
+    }
+    .hidden { display: none; }
+    .calculator-form { margin-top: 16px; }
+    .table-card {
+      background: var(--color-table-row);
+      border-radius: 12px;
+      box-shadow: var(--shadow-card);
+      border: 1.5px solid var(--color-border-card);
+      margin-bottom: 24px;
+      overflow: hidden;
+      transition: box-shadow 0.3s, border 0.3s;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: transparent;
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid var(--color-border);
+      text-align: center;
+    }
+    th {
+      background: var(--color-table-header);
+      font-weight: 600;
+    }
+    tr:last-child td { border-bottom: none; }
+    select, input[type="number"] {
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 1px solid #444;
+      padding: 8px 10px;
+      margin: 0;
+      width: 100px;
+      background: #18181b;
+      color: #f1f5f9;
+      transition: background 0.3s, color 0.3s, width 0.3s;
+    }
+    input[type="number"]::placeholder {
+      color: #8e9ab8;
+      opacity: 1;
+    }
+    .action-btn {
+      font-size: 0.98rem;
+      padding: 2px 8px;
+      margin: 0 2px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      vertical-align: middle;
+      display: inline-block;
+    }
+    .add-btn {
+      background: #22c55e;
+      color: #fff;
+    }
+    .remove-btn {
+      background: #f87171;
+      color: #fff;
+    }
+    .add-btn:active, .remove-btn:active {
+      transform: scale(0.95);
+    }
+    .add-course-btn {
+      background: var(--color-add-btn);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 7px 14px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      margin: 3px 0;
+      transition: background 0.18s;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .add-course-btn:disabled {
+      background: #888;
+      cursor: not-allowed;
+    }
+    .add-course-btn:hover:enabled {
+      background: var(--color-add-btn-hover);
+    }
+    .action-btns {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+    .action-btns button {
+      font-size: 1.1rem;
+      padding: 10px 28px;
+      border-radius: 8px;
+      border: none;
+      background: var(--color-btn);
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .action-btns button:hover {
+      background: var(--color-btn-hover);
+    }
+    .switch-btn {
+      background: transparent;
+      color: var(--color-primary);
+      border: 1.5px solid var(--color-primary);
+      margin-left: 8px;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 1.05rem;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .switch-btn:hover {
+      background: var(--color-primary);
+      color: #fff;
+    }
+    .result-box {
+      background: var(--color-result-bg);
+      border-radius: 8px;
+      padding: 18px;
+      margin-top: 24px;
+      text-align: center;
+      font-size: 1.2rem;
+      color: var(--color-result-text);
+      font-weight: 500;
+      box-shadow: 0 1px 5px rgba(2, 132, 199, 0.08);
+      display: none;
+    }
+    .limit-msg {
+      color: #f87171;
+      margin: 8px 0 0 0;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 500;
+      display: none;
+    }
+    /* Light theme overrides */
+    body.light {
+      --color-bg: #f8fafc;
+      --color-container: #fff;
+      --color-text: #222;
+      --color-primary: #2563eb;
+      --color-table-header: #e0e7ef;
+      --color-table-row: #f1f5f9;
+      --color-btn: #2563eb;
+      --color-btn-hover: #1e40af;
+      --color-result-bg: #e0f2fe;
+      --color-result-text: #0369a1;
+      --color-border: #cbd5e1;
+      --color-border-card: #cbd5e1;
+      --shadow-main: 0 8px 32px 0 rgba(37, 99, 235, 0.09);
+      --shadow-card: 0 2px 12px 0 rgba(37, 99, 235, 0.07);
+    }
+    body.light select, body.light input[type="number"] {
+      background: #fff;
+      color: #222;
+      border: 1px solid #cbd5e1;
+    }
+    body.light input[type="number"]::placeholder {
+      color: #8e9ab8;
+      opacity: 1;
+    }
+    @media (max-width: 600px) {
+      .container {
+        padding: 10px;
+      }
+      th, td {
+        padding: 7px;
+        font-size: 0.97rem;
+      }
+      .action-btns button, .initial-selection button {
+        font-size: 1rem;
+        padding: 10px 16px;
+      }
+      .theme-toggle {
+        top: 14px;
+        right: 10px;
+      }
+      .brand-logo {
+        left: 8px;
+        top: 10px;
+        height: 36px;
+      }
+      .brand-logo img {
+        height: 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Brand Logo in the frame -->
+  <div class="brand-logo">
+    <!-- Replace PATH_TO_DARK_LOGO and PATH_TO_LIGHT_LOGO with your logo file paths -->
+    <img src="C:\Users\rampr\Downloads\RPW.png" alt="Your Brand Name Logo" class="logo-dark" />
+    <img src="C:\Users\rampr\Downloads\RP.png" alt="Your Brand Name Logo" class="logo-light" />
+  </div>
+  <!-- Theme Toggle Button -->
+  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark/light theme" title="Toggle dark/light theme">
+    <svg id="theme-icon" viewBox="0 0 24 24" fill="none">
+      <path class="moon" d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z" stroke="currentColor" stroke-width="1.4" fill="none"/>
+    </svg>
+  </button>
+  <div class="container">
+    <h2>SRM GPA Calculator</h2>
+    <!-- Initial Selection -->
+    <div id="initial-selection" class="initial-selection">
+      <span style="font-size:1.1rem;">Choose calculation type:</span>
+      <div>
+        <button onclick="selectType('sgpa')">SGPA</button>
+        <button onclick="selectType('cgpa')">CGPA</button>
+      </div>
+    </div>
+    <!-- SGPA Calculator -->
+    <form id="sgpa-form" class="calculator-form hidden" autocomplete="off" onsubmit="event.preventDefault(); calculateSGPA();">
+      <div class="table-card">
+        <table id="sgpa-table">
+          <thead>
+            <tr>
+              <th>S.No</th>
+              <th>Credits</th>
+              <th>Grade</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="sgpa-tbody">
+            <!-- Rows will be dynamically generated -->
+          </tbody>
+        </table>
+      </div>
+      <button type="button" id="sgpa-add-btn" class="add-course-btn" onclick="addSGPARow()">+ Add Course</button>
+      <div id="sgpa-limit-msg" class="limit-msg"></div>
+      <div class="action-btns">
+        <button type="submit">Calculate SGPA</button>
+        <button type="button" onclick="resetSGPAForm()">Reset</button>
+        <button type="button" class="switch-btn" onclick="switchTo('cgpa')">Switch to CGPA</button>
+      </div>
+      <div id="sgpa-result" class="result-box"></div>
+    </form>
+    <!-- CGPA Calculator -->
+    <form id="cgpa-form" class="calculator-form hidden" autocomplete="off" onsubmit="event.preventDefault(); calculateCGPA();">
+      <div class="table-card">
+        <table id="cgpa-table">
+          <thead>
+            <tr>
+              <th>S.No</th>
+              <th>Credits</th>
+              <th>Grade</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="cgpa-tbody">
+            <!-- Rows will be dynamically generated -->
+          </tbody>
+        </table>
+      </div>
+      <button type="button" id="cgpa-add-btn" class="add-course-btn" onclick="addCGPARow()">+ Add Course</button>
+      <div class="action-btns">
+        <button type="submit">Calculate CGPA</button>
+        <button type="button" onclick="resetCGPAForm()">Reset</button>
+        <button type="button" class="switch-btn" onclick="switchTo('sgpa')">Switch to SGPA</button>
+      </div>
+      <div id="cgpa-result" class="result-box"></div>
+    </form>
+  </div>
+  <script>
+    // --- Theme toggle logic ---
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+    const moonSVG = `<path class="moon" d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z" stroke="currentColor" stroke-width="1.4" fill="none"/>`;
+    const sunSVG = `<circle cx="12" cy="12" r="6" stroke="currentColor" stroke-width="1.4" fill="currentColor"/>
+      <g stroke="currentColor" stroke-width="1.4">
+        <line x1="12" y1="2" x2="12" y2="4"/>
+        <line x1="12" y1="20" x2="12" y2="22"/>
+        <line x1="4.93" y1="4.93" x2="6.34" y2="6.34"/>
+        <line x1="17.66" y1="17.66" x2="19.07" y2="19.07"/>
+        <line x1="2" y1="12" x2="4" y2="12"/>
+        <line x1="20" y1="12" x2="22" y2="12"/>
+        <line x1="4.93" y1="19.07" x2="6.34" y2="17.66"/>
+        <line x1="17.66" y1="6.34" x2="19.07" y2="4.93"/>
+      </g>`;
+    document.body.classList.remove('light');
+    themeIcon.innerHTML = moonSVG;
+    function setTheme(isDark) {
+      if (isDark) {
+        document.body.classList.remove('light');
+        themeIcon.innerHTML = moonSVG;
+      } else {
+        document.body.classList.add('light');
+        themeIcon.innerHTML = sunSVG;
+      }
+    }
+    themeToggle.addEventListener('click', () => {
+      const isDark = !document.body.classList.contains('light');
+      setTheme(!isDark);
+      localStorage.setItem('theme', !isDark ? 'dark' : 'light');
+    });
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('theme');
+      setTheme(saved !== 'light');
+    });
+
+    // --- GPA Calculator Logic ---
+    const gradePoints = {
+      "O": 10,
+      "A+": 9,
+      "A": 8,
+      "B+": 7,
+      "B": 6,
+      "C": 5,
+      "W": 0,
+      "F": 0,
+      "AB": 0,
+      "I": 0
+    };
+
+    // State
+    let currentMode = null; // 'sgpa' or 'cgpa'
+
+    function selectType(type) {
+      currentMode = type;
+      document.getElementById('initial-selection').classList.add('hidden');
+      document.getElementById('sgpa-form').classList.add('hidden');
+      document.getElementById('cgpa-form').classList.add('hidden');
+      if (type === 'sgpa') {
+        document.getElementById('sgpa-form').classList.remove('hidden');
+        resetSGPAForm();
+      } else {
+        document.getElementById('cgpa-form').classList.remove('hidden');
+        resetCGPAForm();
+      }
+    }
+    function switchTo(type) {
+      if (type === 'sgpa') {
+        selectType('sgpa');
+      } else {
+        selectType('cgpa');
+      }
+    }
+
+    // --- SGPA Calculator ---
+    function addSGPARow(index) {
+      const tbody = document.getElementById('sgpa-tbody');
+      if (tbody.rows.length >= 10) {
+        document.getElementById('sgpa-add-btn').disabled = true;
+        document.getElementById('sgpa-limit-msg').style.display = 'block';
+        document.getElementById('sgpa-limit-msg').textContent = 'Maximum 10 courses allowed for SGPA.';
+        return;
+      }
+      const row = tbody.insertRow(typeof index === "number" ? index + 1 : -1);
+      row.innerHTML = `
+        <td></td>
+        <td>
+          <input type="number" min="0" max="10" required placeholder="Credits" style="width:100px;">
+        </td>
+        <td>
+          <select required>
+            <option value="">Select</option>
+            <option value="O">O</option>
+            <option value="A+">A+</option>
+            <option value="A">A</option>
+            <option value="B+">B+</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="W">W</option>
+            <option value="F">F</option>
+            <option value="AB">AB</option>
+            <option value="I">I</option>
+          </select>
+        </td>
+        <td>
+          <button type="button" class="action-btn add-btn" onclick="addSGPARowAtRow(this)">+</button>
+          <button type="button" class="action-btn remove-btn" onclick="removeSGPARow(this)">–</button>
+        </td>
+      `;
+      updateSGPARowNumbers();
+      if (tbody.rows.length >= 10) {
+        document.getElementById('sgpa-add-btn').disabled = true;
+        document.getElementById('sgpa-limit-msg').style.display = 'block';
+        document.getElementById('sgpa-limit-msg').textContent = 'Maximum 10 courses allowed for SGPA.';
+      } else {
+        document.getElementById('sgpa-add-btn').disabled = false;
+        document.getElementById('sgpa-limit-msg').style.display = 'none';
+      }
+    }
+    function addSGPARowAtRow(btn) {
+      const row = btn.closest('tr');
+      const index = Array.from(row.parentNode.children).indexOf(row);
+      if (document.getElementById('sgpa-tbody').rows.length < 10) {
+        addSGPARow(index);
+      }
+    }
+    function removeSGPARow(btn) {
+      const row = btn.closest('tr');
+      const tbody = row.parentNode;
+      if (tbody.rows.length > 1) { // Always keep at least one row
+        row.remove();
+        updateSGPARowNumbers();
+      }
+      if (tbody.rows.length < 10) {
+        document.getElementById('sgpa-add-btn').disabled = false;
+        document.getElementById('sgpa-limit-msg').style.display = 'none';
+      }
+    }
+    function updateSGPARowNumbers() {
+      Array.from(document.getElementById('sgpa-tbody').rows).forEach((row, i) => {
+        row.cells[0].textContent = i + 1;
+      });
+    }
+    function resetSGPAForm() {
+      const tbody = document.getElementById('sgpa-tbody');
+      tbody.innerHTML = '';
+      for (let i = 0; i < 5; i++) addSGPARow();
+      document.getElementById('sgpa-result').style.display = 'none';
+      document.getElementById('sgpa-result').textContent = '';
+      document.getElementById('sgpa-add-btn').disabled = false;
+      document.getElementById('sgpa-limit-msg').style.display = 'none';
+      updateSGPARowNumbers();
+    }
+    function calculateSGPA() {
+      const tbody = document.getElementById('sgpa-tbody');
+      let totalPoints = 0, totalCredits = 0, valid = true, hasValid = false;
+      Array.from(tbody.rows).forEach(row => {
+        const credits = parseInt(row.cells[1].querySelector('input').value, 10);
+        const grade = row.cells[2].querySelector('select').value;
+        if (isNaN(credits) || credits < 0 || !grade) valid = false;
+        if (credits > 0) {
+          hasValid = true;
+          const gp = gradePoints[grade] || 0;
+          totalPoints += credits * gp;
+          totalCredits += credits;
+        }
+      });
+      if (!valid) {
+        showResult('sgpa-result', 'Please fill all fields correctly.', true);
+        return;
+      }
+      if (!hasValid || totalCredits === 0) {
+        showResult('sgpa-result', 'No courses with credits greater than 0 to calculate SGPA.', true);
+        return;
+      }
+      const sgpa = (totalPoints / totalCredits).toFixed(2);
+      showResult('sgpa-result', `Your SGPA is <strong>${sgpa}</strong>`);
+    }
+
+    // --- CGPA Calculator (same as SGPA but unlimited courses) ---
+    function addCGPARow(index) {
+      const tbody = document.getElementById('cgpa-tbody');
+      const row = tbody.insertRow(typeof index === "number" ? index + 1 : -1);
+      row.innerHTML = `
+        <td></td>
+        <td>
+          <input type="number" min="0" max="10" required placeholder="Credits" style="width:100px;">
+        </td>
+        <td>
+          <select required>
+            <option value="">Select</option>
+            <option value="O">O</option>
+            <option value="A+">A+</option>
+            <option value="A">A</option>
+            <option value="B+">B+</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="W">W</option>
+            <option value="F">F</option>
+            <option value="AB">AB</option>
+            <option value="I">I</option>
+          </select>
+        </td>
+        <td>
+          <button type="button" class="action-btn add-btn" onclick="addCGPARowAtRow(this)">+</button>
+          <button type="button" class="action-btn remove-btn" onclick="removeCGPARow(this)">–</button>
+        </td>
+      `;
+      updateCGPARowNumbers();
+    }
+    function addCGPARowAtRow(btn) {
+      const row = btn.closest('tr');
+      const index = Array.from(row.parentNode.children).indexOf(row);
+      addCGPARow(index);
+    }
+    function removeCGPARow(btn) {
+      const row = btn.closest('tr');
+      const tbody = row.parentNode;
+      if (tbody.rows.length > 1) { // Always keep at least one row
+        row.remove();
+        updateCGPARowNumbers();
+      }
+    }
+    function updateCGPARowNumbers() {
+      Array.from(document.getElementById('cgpa-tbody').rows).forEach((row, i) => {
+        row.cells[0].textContent = i + 1;
+      });
+    }
+    function resetCGPAForm() {
+      const tbody = document.getElementById('cgpa-tbody');
+      tbody.innerHTML = '';
+      for (let i = 0; i < 5; i++) addCGPARow();
+      document.getElementById('cgpa-result').style.display = 'none';
+      document.getElementById('cgpa-result').textContent = '';
+      updateCGPARowNumbers();
+    }
+    function calculateCGPA() {
+      const tbody = document.getElementById('cgpa-tbody');
+      let totalPoints = 0, totalCredits = 0, valid = true, hasValid = false;
+      Array.from(tbody.rows).forEach(row => {
+        const credits = parseInt(row.cells[1].querySelector('input').value, 10);
+        const grade = row.cells[2].querySelector('select').value;
+        if (isNaN(credits) || credits < 0 || !grade) valid = false;
+        if (credits > 0) {
+          hasValid = true;
+          const gp = gradePoints[grade] || 0;
+          totalPoints += credits * gp;
+          totalCredits += credits;
+        }
+      });
+      if (!valid) {
+        showResult('cgpa-result', 'Please fill all fields correctly.', true);
+        return;
+      }
+      if (!hasValid || totalCredits === 0) {
+        showResult('cgpa-result', 'No courses with credits greater than 0 to calculate CGPA.', true);
+        return;
+      }
+      const cgpa = (totalPoints / totalCredits).toFixed(2);
+      showResult('cgpa-result', `Your CGPA is <strong>${cgpa}</strong>`);
+    }
+
+    // Utility
+    function showResult(id, msg, isError = false) {
+      const box = document.getElementById(id);
+      box.innerHTML = msg;
+      box.style.display = 'block';
+      box.style.background = isError
+        ? (document.body.classList.contains('light') ? '#fee2e2' : '#7f1d1d')
+        : (document.body.classList.contains('light') ? '#e0f2fe' : 'var(--color-result-bg)');
+      box.style.color = isError
+        ? (document.body.classList.contains('light') ? '#b91c1c' : '#fff')
+        : (document.body.classList.contains('light') ? '#0369a1' : 'var(--color-result-text)');
+    }
+  </script>
+</body>
+</html>
